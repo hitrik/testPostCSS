@@ -1,0 +1,26 @@
+{
+  "name": "test_postcss",
+  "version": "0.0.1",
+  "description": "test postcss",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "test"
+  ],
+  "author": "hitrick",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.4.0",
+    "babel-loader": "^6.2.1",
+    "babel-plugin-transform-runtime": "^6.4.3",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-runtime": "^6.3.19",
+    "webpack": "^1.12.11"
+  },
+  "dependencies": {
+    "postcss": "^5.0.14",
+    "postcss-colors-only": "0.0.3"
+  }
+}
