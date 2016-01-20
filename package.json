@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "postcss": "^5.0.14",
+    "postcss-camelcaseoff": "^1.0.0",
     "postcss-colors-only": "0.0.3",
     "postcss-safe-parser": "^1.0.4"
   }

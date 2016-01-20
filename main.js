@@ -1,8 +1,9 @@
 const postcss = require("postcss");
 const colorsOnly = require('postcss-colors-only');
-const safe   = require('postcss-safe-parser');
+const safe = require('postcss-safe-parser');
+const ccoff = require('postcss-camelcaseoff');
 
-class ColorStyle {
+export class ColorStyle {
     constructor() {
         this.remainOnlyColors();
     }
@@ -10,15 +11,15 @@ class ColorStyle {
     getDOMNodesStyles() {
         let all = [...document.getElementsByTagName("*")];
         let result = [];
-        all.forEach((item, i) => {
+        all.forEach((item) => {
             let styleItem = `${item.nodeName.toLowerCase()} ${JSON.stringify(window.getComputedStyle(item))}`
-                    .replace(/,/g, ";")
-                    .replace(/\"/g, "")
-                    .replace(/all:;/g, "")
-                    .replace(/\d+\:(.*?)\;/gi,"");
-            result.push(styleItem);
+                .replace(/\"/g, "")
+                .replace(/\d+\:(.*?)\,/gi,"")
+                .replace(/[a-z](,)\b/g, ";")
+                .replace(/all:;/g, "")
+                .replace(/\}/, ";\}");
+                result.push(styleItem);
         });
-        console.log(result);
         return result;
     }
     remainOnlyColors() {
@@ -26,8 +27,11 @@ class ColorStyle {
         let promises = [];
 
         styles.forEach((item, i) => {
+
             if(/(head|script|html|link|meta|title)/gmi.test(item)) return;
+            console.log();
             promises.push(postcss()
+                .use(ccoff())
                 .use(colorsOnly())
                 .process(`${item}`, {parser: safe})
                 .then(function(res) {

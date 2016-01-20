@@ -48,6 +48,10 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -55,8 +59,9 @@
 	var postcss = __webpack_require__(1);
 	var colorsOnly = __webpack_require__(45);
 	var safe = __webpack_require__(56);
+	var ccoff = __webpack_require__(59);
 
-	var ColorStyle = function () {
+	var ColorStyle = exports.ColorStyle = function () {
 	    function ColorStyle() {
 	        _classCallCheck(this, ColorStyle);
 
@@ -68,11 +73,10 @@
 	        value: function getDOMNodesStyles() {
 	            var all = [].concat(_toConsumableArray(document.getElementsByTagName("*")));
 	            var result = [];
-	            all.forEach(function (item, i) {
-	                var styleItem = (item.nodeName.toLowerCase() + ' ' + JSON.stringify(window.getComputedStyle(item))).replace(/,/g, ";").replace(/\"/g, "").replace(/all:;/g, "").replace(/\d+\:(.*?)\;/gi, "");
+	            all.forEach(function (item) {
+	                var styleItem = (item.nodeName.toLowerCase() + ' ' + JSON.stringify(window.getComputedStyle(item))).replace(/\"/g, "").replace(/\d+\:(.*?)\,/gi, "").replace(/[a-z](,)\b/g, ";").replace(/all:;/g, "").replace(/\}/, ";\}");
 	                result.push(styleItem);
 	            });
-	            console.log(result);
 	            return result;
 	        }
 	    }, {
@@ -82,8 +86,10 @@
 	            var promises = [];
 
 	            styles.forEach(function (item, i) {
+
 	                if (/(head|script|html|link|meta|title)/gmi.test(item)) return;
-	                promises.push(postcss().use(colorsOnly()).process('' + item, { parser: safe }).then(function (res) {
+	                console.log();
+	                promises.push(postcss().use(ccoff()).use(colorsOnly()).process('' + item, { parser: safe }).then(function (res) {
 	                    return res.css;
 	                }));
 	            });
@@ -12080,6 +12086,26 @@
 	    return tokens;
 	}
 	module.exports = exports['default'];
+
+/***/ },
+/* 59 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var postcss = __webpack_require__(1);
+
+	module.exports = postcss.plugin('camelcaseoff', function camelcaseoff(options) {
+	    return function (css) {
+	        options = options || {};
+	        css.walkRules(function (rule) {
+	            rule.walkDecls(function (decl, i) {
+	                var value = decl.prop;
+	                decl.prop = value.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+	            });
+	        });
+	    };
+	});
 
 /***/ }
 /******/ ]);
