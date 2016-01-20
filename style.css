@@ -1,0 +1,23 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #006600;
+  color:#444;
+}
+.main {
+  background-color: #006600;
+  color: #fff;
+  width: 700px;
+  margin: 40px auto;
+  color:#444;
+}
+.labels {
+  font-size: 1.5em;
+  color: #007aff;
+  color:#444;
+}
+.advert_block {
+  background-color: #00e359;
+  border-radius: 5px;
+  color: red;
+}

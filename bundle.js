@@ -44,17 +44,17 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _postcss = __webpack_require__(1);
-
-	var _postcssColorsOnly = __webpack_require__(44);
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var postcss = __webpack_require__(1);
+	var colorsOnly = __webpack_require__(45);
+	var safe = __webpack_require__(56);
 
 	var ColorStyle = function () {
 	    function ColorStyle() {
@@ -64,27 +64,33 @@
 	    }
 
 	    _createClass(ColorStyle, [{
-	        key: "getDOMNodesStyles",
+	        key: 'getDOMNodesStyles',
 	        value: function getDOMNodesStyles() {
 	            var all = [].concat(_toConsumableArray(document.getElementsByTagName("*")));
 	            var result = [];
-	            all.forEach(function (item) {
-	                var styleItem = item.nodeName.toLowerCase() + " " + window.getComputedStyle(item);
+	            all.forEach(function (item, i) {
+	                var styleItem = (item.nodeName.toLowerCase() + ' ' + JSON.stringify(window.getComputedStyle(item))).replace(/,/g, ";").replace(/\"/g, "").replace(/all:;/g, "").replace(/\d+\:(.*?)\;/gi, "");
 	                result.push(styleItem);
 	            });
+	            console.log(result);
 	            return result;
 	        }
 	    }, {
-	        key: "remainOnlyColors",
+	        key: 'remainOnlyColors',
 	        value: function remainOnlyColors() {
 	            var styles = this.getDOMNodesStyles();
-	            var colors = [];
+	            var promises = [];
 
-	            styles.forEach(function (item) {
-	                var style = postcss().use((0, _postcssColorsOnly.colorsOnly)()).process(item).css;
-	                colors.push(style);
+	            styles.forEach(function (item, i) {
+	                if (/(head|script|html|link|meta|title)/gmi.test(item)) return;
+	                promises.push(postcss().use(colorsOnly()).process('' + item, { parser: safe }).then(function (res) {
+	                    return res.css;
+	                }));
 	            });
-	            console.log(colors);
+
+	            Promise.all(promises).then(function (result) {
+	                console.log(result);
+	            });
 	        }
 	    }]);
 
@@ -121,7 +127,7 @@
 
 	var _atRule2 = _interopRequireDefault(_atRule);
 
-	var _vendor = __webpack_require__(43);
+	var _vendor = __webpack_require__(44);
 
 	var _vendor2 = _interopRequireDefault(_vendor);
 
@@ -1987,7 +1993,7 @@
 	    if (global['Meteor']) {
 	        Base64 = global.Base64; // for normal export in Meteor.js
 	    }
-	})(undefined);
+	})(undefined || window);
 
 /***/ },
 /* 13 */
@@ -9153,7 +9159,7 @@
 
 	var _path2 = _interopRequireDefault(_path);
 
-	var _fs = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"fs\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+	var _fs = __webpack_require__(43);
 
 	var _fs2 = _interopRequireDefault(_fs);
 
@@ -9266,6 +9272,14 @@
 /* 43 */
 /***/ function(module, exports) {
 
+	"use strict";
+
+	console.log("I'm `fs` modules");
+
+/***/ },
+/* 44 */
+/***/ function(module, exports) {
+
 	'use strict';
 
 	exports.__esModule = true;
@@ -9290,7 +9304,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9298,7 +9312,7 @@
 	var postcss = __webpack_require__(1);
 
 	module.exports = postcss.plugin('postcss-colors-only', function (options) {
-	    var extractor = __webpack_require__(45);
+	    var extractor = __webpack_require__(46);
 
 	    function transformProperty(decl, colors) {
 	        var propertyTransformers = {
@@ -9376,7 +9390,7 @@
 	});
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -9385,9 +9399,9 @@
 
 	function CssColorExtractor() {
 	    var postcss = __webpack_require__(1);
-	    var util = __webpack_require__(46);
-	    var unique = __webpack_require__(49);
-	    var Color = __webpack_require__(50);
+	    var util = __webpack_require__(47);
+	    var unique = __webpack_require__(50);
+	    var Color = __webpack_require__(51);
 
 	    function doesPropertyAllowColor(property) {
 	        var properties = ['color', 'background', 'background-color', 'background-image', 'border', 'border-top', 'border-right', 'border-bottom', 'border-left', 'border-color', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color', 'outline', 'outline-color', 'text-shadow', 'box-shadow'];
@@ -9482,7 +9496,7 @@
 	}
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {'use strict';
@@ -9979,7 +9993,7 @@
 	}
 	exports.isPrimitive = isPrimitive;
 
-	exports.isBuffer = __webpack_require__(47);
+	exports.isBuffer = __webpack_require__(48);
 
 	function objectToString(o) {
 	  return Object.prototype.toString.call(o);
@@ -10016,7 +10030,7 @@
 	 *     prototype.
 	 * @param {function} superCtor Constructor function to inherit prototype from.
 	 */
-	exports.inherits = __webpack_require__(48);
+	exports.inherits = __webpack_require__(49);
 
 	exports._extend = function (origin, add) {
 	  // Don't do anything if add isn't an object
@@ -10036,7 +10050,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(29)))
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -10048,7 +10062,7 @@
 	};
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -10078,7 +10092,7 @@
 	}
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports) {
 
 	/*!
@@ -10111,7 +10125,7 @@
 	};
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -10119,8 +10133,8 @@
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 	/* MIT license */
-	var convert = __webpack_require__(51),
-	    string = __webpack_require__(53);
+	var convert = __webpack_require__(52),
+	    string = __webpack_require__(54);
 
 	var Color = function Color(obj) {
 	   if (obj instanceof Color) return obj;
@@ -10528,12 +10542,12 @@
 	module.exports = Color;
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var conversions = __webpack_require__(52);
+	var conversions = __webpack_require__(53);
 
 	var convert = function convert() {
 	  return new Converter();
@@ -10623,7 +10637,7 @@
 	module.exports = convert;
 
 /***/ },
-/* 52 */
+/* 53 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -11325,13 +11339,13 @@
 	}
 
 /***/ },
-/* 53 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	/* MIT license */
-	var colorNames = __webpack_require__(54);
+	var colorNames = __webpack_require__(55);
 
 	module.exports = {
 	   getRgba: getRgba,
@@ -11541,7 +11555,7 @@
 	}
 
 /***/ },
-/* 54 */
+/* 55 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -11696,6 +11710,376 @@
 		"yellow": [255, 255, 0],
 		"yellowgreen": [154, 205, 50]
 	};
+
+/***/ },
+/* 56 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	exports.__esModule = true;
+	exports.default = safeParse;
+
+	var _input = __webpack_require__(41);
+
+	var _input2 = _interopRequireDefault(_input);
+
+	var _safeParser = __webpack_require__(57);
+
+	var _safeParser2 = _interopRequireDefault(_safeParser);
+
+	function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function safeParse(css, opts) {
+	    var input = new _input2.default(css, opts);
+
+	    var parser = new _safeParser2.default(input);
+	    parser.tokenize();
+	    parser.loop();
+
+	    return parser.root;
+	}
+	module.exports = exports['default'];
+
+/***/ },
+/* 57 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	exports.__esModule = true;
+
+	var _parser = __webpack_require__(33);
+
+	var _parser2 = _interopRequireDefault(_parser);
+
+	var _safeTokenize = __webpack_require__(58);
+
+	var _safeTokenize2 = _interopRequireDefault(_safeTokenize);
+
+	function _interopRequireDefault(obj) {
+	    return obj && obj.__esModule ? obj : { default: obj };
+	}
+
+	function _classCallCheck(instance, Constructor) {
+	    if (!(instance instanceof Constructor)) {
+	        throw new TypeError("Cannot call a class as a function");
+	    }
+	}
+
+	function _possibleConstructorReturn(self, call) {
+	    if (!self) {
+	        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+	    }return call && ((typeof call === 'undefined' ? 'undefined' : _typeof(call)) === "object" || typeof call === "function") ? call : self;
+	}
+
+	function _inherits(subClass, superClass) {
+	    if (typeof superClass !== "function" && superClass !== null) {
+	        throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof(superClass)));
+	    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+	}
+
+	var SafeParser = function (_Parser) {
+	    _inherits(SafeParser, _Parser);
+
+	    function SafeParser() {
+	        _classCallCheck(this, SafeParser);
+
+	        return _possibleConstructorReturn(this, _Parser.apply(this, arguments));
+	    }
+
+	    SafeParser.prototype.tokenize = function tokenize() {
+	        this.tokens = (0, _safeTokenize2.default)(this.input);
+	    };
+
+	    SafeParser.prototype.unclosedBracket = function unclosedBracket() {};
+
+	    SafeParser.prototype.unknownWord = function unknownWord(start) {
+	        var buffer = this.tokens.slice(start, this.pos + 1);
+	        this.spaces += buffer.map(function (i) {
+	            return i[1];
+	        }).join('');
+	    };
+
+	    SafeParser.prototype.unexpectedClose = function unexpectedClose() {
+	        this.current.raws.after += '}';
+	    };
+
+	    SafeParser.prototype.doubleColon = function doubleColon() {};
+
+	    SafeParser.prototype.unnamedAtrule = function unnamedAtrule(node) {
+	        node.name = '';
+	    };
+
+	    SafeParser.prototype.precheckMissedSemicolon = function precheckMissedSemicolon(tokens) {
+	        var colon = this.colon(tokens);
+	        if (colon === false) return;
+
+	        var split = undefined;
+	        for (split = colon - 1; split >= 0; split--) {
+	            if (tokens[split][0] === 'word') break;
+	        }
+	        for (split -= 1; split >= 0; split--) {
+	            if (tokens[split][0] !== 'space') {
+	                split += 1;
+	                break;
+	            }
+	        }
+	        var other = tokens.splice(split, tokens.length - split);
+	        this.decl(other);
+	    };
+
+	    SafeParser.prototype.checkMissedSemicolon = function checkMissedSemicolon() {};
+
+	    SafeParser.prototype.endFile = function endFile() {
+	        if (this.current.nodes && this.current.nodes.length) {
+	            this.current.raws.semicolon = this.semicolon;
+	        }
+	        this.current.raws.after = (this.current.raws.after || '') + this.spaces;
+
+	        while (this.current.parent) {
+	            this.current = this.current.parent;
+	            this.current.raws.after = '';
+	        }
+	    };
+
+	    return SafeParser;
+	}(_parser2.default);
+
+	exports.default = SafeParser;
+	module.exports = exports['default'];
+
+/***/ },
+/* 58 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	exports.__esModule = true;
+	exports.default = safeTokenize;
+	var SINGLE_QUOTE = 39; // `''
+	var DOUBLE_QUOTE = 34; // `"'
+	var BACKSLASH = 92; // `\'
+	var SLASH = 47; // `/'
+	var NEWLINE = 10; // `\n'
+	var SPACE = 32; // ` '
+	var FEED = 12; // `\f'
+	var TAB = 9; // `\t'
+	var CR = 13; // `\r'
+	var OPEN_PARENTHESES = 40; // `('
+	var CLOSE_PARENTHESES = 41; // `)'
+	var OPEN_CURLY = 123; // `{'
+	var CLOSE_CURLY = 125; // `}'
+	var SEMICOLON = 59; // `;'
+	var ASTERICK = 42; // `*'
+	var COLON = 58; // `:'
+	var AT = 64; // `@'
+	var RE_AT_END = /[ \n\t\r\{\(\)'"\\;/]/g;
+	var RE_WORD_END = /[ \n\t\r\(\)\{\}:;@!'"\\]|\/(?=\*)/g;
+	var RE_BAD_BRACKET = /.[\\\/\("'\n]/;
+
+	function safeTokenize(input) {
+	    var tokens = [];
+	    var css = input.css.valueOf();
+
+	    var code = undefined,
+	        next = undefined,
+	        quote = undefined,
+	        lines = undefined,
+	        last = undefined,
+	        content = undefined,
+	        escape = undefined,
+	        nextLine = undefined,
+	        nextOffset = undefined,
+	        escaped = undefined,
+	        escapePos = undefined,
+	        prev = undefined,
+	        n = undefined;
+
+	    var length = css.length;
+	    var offset = -1;
+	    var line = 1;
+	    var pos = 0;
+
+	    function fixUnclosed(what, end) {
+	        css += end;
+	        next = css.length - 1;
+	    }
+
+	    while (pos < length) {
+	        code = css.charCodeAt(pos);
+
+	        if (code === NEWLINE) {
+	            offset = pos;
+	            line += 1;
+	        }
+
+	        switch (code) {
+	            case NEWLINE:
+	            case SPACE:
+	            case TAB:
+	            case CR:
+	            case FEED:
+	                next = pos;
+	                do {
+	                    next += 1;
+	                    code = css.charCodeAt(next);
+	                    if (code === NEWLINE) {
+	                        offset = next;
+	                        line += 1;
+	                    }
+	                } while (code === SPACE || code === NEWLINE || code === TAB || code === CR || code === FEED);
+
+	                tokens.push(['space', css.slice(pos, next)]);
+	                pos = next - 1;
+	                break;
+
+	            case OPEN_CURLY:
+	                tokens.push(['{', '{', line, pos - offset]);
+	                break;
+
+	            case CLOSE_CURLY:
+	                tokens.push(['}', '}', line, pos - offset]);
+	                break;
+
+	            case COLON:
+	                tokens.push([':', ':', line, pos - offset]);
+	                break;
+
+	            case SEMICOLON:
+	                tokens.push([';', ';', line, pos - offset]);
+	                break;
+
+	            case OPEN_PARENTHESES:
+	                prev = tokens.length ? tokens[tokens.length - 1][1] : '';
+	                n = css.charCodeAt(pos + 1);
+	                if (prev === 'url' && n !== SINGLE_QUOTE && n !== DOUBLE_QUOTE && n !== SPACE && n !== NEWLINE && n !== TAB && n !== FEED && n !== CR) {
+	                    next = pos;
+	                    do {
+	                        escaped = false;
+	                        next = css.indexOf(')', next + 1);
+	                        if (next === -1) fixUnclosed('bracket', ')');
+	                        escapePos = next;
+	                        while (css.charCodeAt(escapePos - 1) === BACKSLASH) {
+	                            escapePos -= 1;
+	                            escaped = !escaped;
+	                        }
+	                    } while (escaped);
+
+	                    tokens.push(['brackets', css.slice(pos, next + 1), line, pos - offset, line, next - offset]);
+	                    pos = next;
+	                } else {
+	                    next = css.indexOf(')', pos + 1);
+	                    content = css.slice(pos, next + 1);
+
+	                    if (next === -1 || RE_BAD_BRACKET.test(content)) {
+	                        tokens.push(['(', '(', line, pos - offset]);
+	                    } else {
+	                        tokens.push(['brackets', content, line, pos - offset, line, next - offset]);
+	                        pos = next;
+	                    }
+	                }
+
+	                break;
+
+	            case CLOSE_PARENTHESES:
+	                tokens.push([')', ')', line, pos - offset]);
+	                break;
+
+	            case SINGLE_QUOTE:
+	            case DOUBLE_QUOTE:
+	                quote = code === SINGLE_QUOTE ? '\'' : '"';
+	                next = pos;
+	                do {
+	                    escaped = false;
+	                    next = css.indexOf(quote, next + 1);
+	                    if (next === -1) fixUnclosed('quote', quote);
+	                    escapePos = next;
+	                    while (css.charCodeAt(escapePos - 1) === BACKSLASH) {
+	                        escapePos -= 1;
+	                        escaped = !escaped;
+	                    }
+	                } while (escaped);
+
+	                tokens.push(['string', css.slice(pos, next + 1), line, pos - offset, line, next - offset]);
+	                pos = next;
+	                break;
+
+	            case AT:
+	                RE_AT_END.lastIndex = pos + 1;
+	                RE_AT_END.test(css);
+	                if (RE_AT_END.lastIndex === 0) {
+	                    next = css.length - 1;
+	                } else {
+	                    next = RE_AT_END.lastIndex - 2;
+	                }
+	                tokens.push(['at-word', css.slice(pos, next + 1), line, pos - offset, line, next - offset]);
+	                pos = next;
+	                break;
+
+	            case BACKSLASH:
+	                next = pos;
+	                escape = true;
+	                while (css.charCodeAt(next + 1) === BACKSLASH) {
+	                    next += 1;
+	                    escape = !escape;
+	                }
+	                code = css.charCodeAt(next + 1);
+	                if (escape && code !== SLASH && code !== SPACE && code !== NEWLINE && code !== TAB && code !== CR && code !== FEED) {
+	                    next += 1;
+	                }
+	                tokens.push(['word', css.slice(pos, next + 1), line, pos - offset, line, next - offset]);
+	                pos = next;
+	                break;
+
+	            default:
+	                if (code === SLASH && css.charCodeAt(pos + 1) === ASTERICK) {
+	                    next = css.indexOf('*/', pos + 2) + 1;
+	                    if (next === 0) fixUnclosed('comment', '*/');
+
+	                    content = css.slice(pos, next + 1);
+	                    lines = content.split('\n');
+	                    last = lines.length - 1;
+
+	                    if (last > 0) {
+	                        nextLine = line + last;
+	                        nextOffset = next - lines[last].length;
+	                    } else {
+	                        nextLine = line;
+	                        nextOffset = offset;
+	                    }
+
+	                    tokens.push(['comment', content, line, pos - offset, nextLine, next - nextOffset]);
+
+	                    offset = nextOffset;
+	                    line = nextLine;
+	                    pos = next;
+	                } else {
+	                    RE_WORD_END.lastIndex = pos + 1;
+	                    RE_WORD_END.test(css);
+	                    if (RE_WORD_END.lastIndex === 0) {
+	                        next = css.length - 1;
+	                    } else {
+	                        next = RE_WORD_END.lastIndex - 2;
+	                    }
+
+	                    tokens.push(['word', css.slice(pos, next + 1), line, pos - offset, line, next - offset]);
+	                    pos = next;
+	                }
+
+	                break;
+	        }
+
+	        pos++;
+	    }
+
+	    return tokens;
+	}
+	module.exports = exports['default'];
 
 /***/ }
 /******/ ]);
